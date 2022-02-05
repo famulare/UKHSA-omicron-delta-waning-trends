@@ -1,0 +1,79 @@
+VE,variant,weeks,vax,report_date,notes
+91.50978895,delta,2-4,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+86.41480223,delta,5-9,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+79.65768226,delta,10-14,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+75.55933042,delta,15-19,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+68.80866115,delta,20-24,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+64.03836023,delta,25+,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+94.04384333,delta,1,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+97.2208186,delta,2-4,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+93.78151441,delta,5-9,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+92.66016578,delta,10-14,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+96.37147496,delta,1,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+98.88603744,delta,2-4,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+97.43691742,delta,5-9,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+66.30148474,omicron,2-4,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+49.28880909,omicron,5-9,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+31.27304785,omicron,10-14,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+17.23415007,omicron,15-19,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+13.80129659,omicron,20-24,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+10.68990356,omicron,25+,BNT162b2x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+68.83553912,omicron,1,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+68.70437466,omicron,2-4,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+57.32101964,omicron,5-9,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+47.91803296,omicron,10-14,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+40.83622719,omicron,15-19,BNT162b2x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+76.79571673,omicron,1,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+76.67422833,omicron,2-4,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+68.26787653,omicron,5-9,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+67.13362648,omicron,10-14,BNT162b2x2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+94.93243243,delta,2-4,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+92.22972973,delta,5-9,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+84.7972973,delta,10-14,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+83.78378378,delta,15-19,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+76.68918919,delta,20-24,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+80.74324324,delta,25+,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+96.95945946,delta,1,mRNA-1273x2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+95.60810811,delta,2-4,mRNA-1273x2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+95.94594595,delta,1,mRNA-1273x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+97.97297297,delta,2-4,mRNA-1273x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+76.01351351,omicron,2-4,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+53.71621622,omicron,5-9,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+37.16216216,omicron,10-14,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+27.02702703,omicron,15-19,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+16.89189189,omicron,20-24,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+13.17567568,omicron,25+,mRNA-1273x2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+65.54054054,omicron,1,mRNA-1273x2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+66.21621622,omicron,2-4,mRNA-1273x2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+49.66216216,omicron,5-9,mRNA-1273x2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+69.59459459,omicron,1,mRNA-1273x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+68.91891892,omicron,2-4,mRNA-1273x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+56.75675676,omicron,5-9,mRNA-1273x3,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+83.66666667,delta,2-4,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+77.33333333,delta,5-9,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+69.66666667,delta,10-14,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+54.33333333,delta,15-19,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+48.33333333,delta,20-24,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+44.33333333,delta,25+,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+89.33333333,delta,1,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+96.33333333,delta,2-4,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+93.66666667,delta,5-9,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+89,delta,10-14,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+92.66666667,delta,1,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+98.33333333,delta,2-4,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+96.33333333,delta,5-9,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+49.66666667,omicron,2-4,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+35.66666667,omicron,5-9,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+30.33333333,omicron,10-14,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+18.33333333,omicron,15-19,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+5.666666667,omicron,20-24,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+-1,omicron,25+,ChAdOx1-Sx2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+60.33333333,omicron,1,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+63.66666667,omicron,2-4,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+54,omicron,5-9,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+39,omicron,10-14,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+29,omicron,15-19,ChAdOx1-Sx2 + BNT162b2,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+69,omicron,1,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+70.66666667,omicron,2-4,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+62.33333333,omicron,5-9,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+39,omicron,10-14,ChAdOx1-Sx2 + mRNA-1273,2022-Jan-27,Fig 1 of https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf

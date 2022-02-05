@@ -1,0 +1,308 @@
+# plot VE on logit axis to look at omicron vs delta waning
+
+library(tidyverse)
+library(mgcv)
+
+# load data grabbed from UKHSA 2022 Week 4 vaccine surveillance report 
+# https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
+
+d <- read.csv('UKHSA-VE-grab.csv',stringsAsFactors = TRUE)
+
+d$weeks <- ordered(d$weeks, levels=c('1','2-4','5-9','10-14','15-19','20-24','25+'))
+d$weeks_numeric <- as.numeric(d$weeks) # for modeling. The bins are close enough to uniformly-spaced time intervals for descriptive modeling
+
+d$vax_variant <- interaction(d$vax,d$variant) # for plotting
+
+d$VEnorm <- d$VE/100 # for betareg
+d$logitVE <-  qlogis(d$VE/100) # for plotting and log-linear modeling
+
+
+# plot grabbed data
+p1 <- ggplot(d) + 
+        geom_point(aes(x=weeks, y=VE, group=vax, color=vax)) +
+        geom_line(aes(x=weeks, y=VE, group=vax, color=vax)) +
+        facet_wrap('variant') +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+p1
+ggsave('VE_vax_var.png',units='in',width=6,height=3,device='png')
+
+p2 <- ggplot(d) + 
+        geom_point(aes(x=weeks, y=logitVE, group=vax, color=vax)) +
+        geom_line(aes(x=weeks, y=logitVE, group=vax, color=vax)) +
+        facet_wrap('variant') +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+p2
+ggsave('VE_logit_vax_var.png',units='in',width=6,height=3,device='png')
+
+# modeling strategy
+# 1) compare no-interaction model to model with linear weeks-variant interaction, see interaction has lower AIC and is preffered model
+# 2) compare slope-variant interaction to nonlinear weeks-variant, see nonlinear model is preferred
+# conclude that it would be great to see this replicated in other settings to mitigate against UKHSA biases, but
+# omicron immunity is less stable than delta immunity from wt vaccination. 
+
+
+# prepping for linear modeling
+
+# plot grouped by variant on one panel
+p3 <- ggplot(d) + 
+        geom_point(aes(x=weeks, y=VE, group=vax, color=variant)) +
+        geom_line(aes(x=weeks, y=VE, group=vax_variant, color=variant)) +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+p3
+p4 <- ggplot(d) + 
+        geom_point(aes(x=weeks, y=logitVE, group=vax, color=variant)) +
+        geom_line(aes(x=weeks, y=logitVE, group=vax_variant, color=variant)) +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+p4
+
+# linear in weeks, no interactions
+summary(
+  m_lin_noint <- gam(VEnorm ~ weeks_numeric + variant + s(vax,bs='re'),
+                     family=betar(link="logit"),
+                     method='REML',
+                     data=d %>% filter(VE>0 & weeks_numeric>1)) # exclude week 1
+  )
+
+
+# linear in weeks, week:variant interaction
+summary(
+  m_lin_weekvariant <- gam(VEnorm ~ weeks_numeric + variant + weeks_numeric:variant + s(vax,bs='re'),
+                     family=betar(link="logit"),
+                     method='REML',
+                     data=d %>% filter(VE>0 & weeks_numeric>1))  # exclude week 1
+)
+# weeks_numeric:omicron interaction is negative and significant
+
+# interaction model is preferred (deltaAIC=8)
+AIC(m_lin_noint,m_lin_weekvariant)
+
+
+# plot model fit for modal vaccine (vax effect = 0)
+pd <- expand.grid(weeks=levels(d$weeks)[-c(1)], variant=levels(d$variant))
+pd$weeks <- ordered(pd$weeks)
+pd$weeks_numeric <- as.numeric(pd$weeks)+1
+pd$vax <- 'model: variant:weeks interaction'
+pd$vax_variant <- interaction(pd$vax,pd$variant)
+
+fit<-predict(m_lin_weekvariant,newdata=pd, se=TRUE, exclude='s(vax)')
+pd$logitVE <- fit$fit
+pd$logitVE_lower <- fit$fit-2*fit$se.fit
+pd$logitVE_upper <- fit$fit+2*fit$se.fit
+
+pd$VE <-plogis(pd$logitVE)*100
+pd$VE_lower <-plogis(pd$logitVE_lower)*100
+pd$VE_upper <-plogis(pd$logitVE_upper)*100
+
+p4 +
+  geom_line(data=pd,aes(x=weeks,y=logitVE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd,aes(x=weeks_numeric,ymin=logitVE_lower,ymax=logitVE_upper,group=variant),alpha=0.2) 
+ggsave('VE_logit_var_model.png',units='in',width=4,height=3,device='png')
+
+p3 +
+  geom_line(data=pd,aes(x=weeks,y=VE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd,aes(x=weeks_numeric,ymin=VE_lower,ymax=VE_upper,group=variant),alpha=0.2) 
+ggsave('VE_var_model.png',units='in',width=4,height=3,device='png')
+
+
+p2 +
+  geom_line(data=pd,aes(x=weeks,y=logitVE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd,aes(x=weeks_numeric,ymin=logitVE_lower,ymax=logitVE_upper,group=variant),alpha=0.2) 
+ggsave('VE_logit_vax_var_model.png',units='in',width=6,height=3,device='png')
+
+p1 +
+  geom_line(data=pd,aes(x=weeks,y=VE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd,aes(x=weeks_numeric,ymin=VE_lower,ymax=VE_upper,group=variant),alpha=0.2) 
+ggsave('VE_vax_var_model.png',units='in',width=6,height=3,device='png')
+
+
+## isolate time trend difference from level difference
+## shift to compare trends starting from same intercept
+pd2<-pd
+
+# shift between omicron and delta
+shift_intercept <- max(pd2$logitVE[pd2$variant=='omicron']) - max(pd2$logitVE[pd2$variant=='delta'])
+  # this is slightly different than coef(m_lin_noint)['variantomicron'] because we're plotting a zeroed out random effect
+
+# zero reference 
+maxLogitVE <- max(pd2$logitVE)
+
+# shift by omicron intercept 
+pd2$logitVE[pd2$variant=='omicron'] <- pd2$logitVE[pd2$variant=='omicron'] - shift_intercept
+pd2$logitVE_lower[pd2$variant=='omicron'] <- pd2$logitVE_lower[pd2$variant=='omicron'] - shift_intercept
+pd2$logitVE_upper[pd2$variant=='omicron'] <- pd2$logitVE_upper[pd2$variant=='omicron'] - shift_intercept
+
+#shift to zero reference
+pd2$logitVE <- pd2$logitVE - maxLogitVE
+pd2$logitVE_lower <- pd2$logitVE_lower - maxLogitVE
+pd2$logitVE_upper <- pd2$logitVE_upper - maxLogitVE
+
+# VE scale
+# (this doesn't really mean anything, but I was curious to see it anyway)
+pd2$VE <-plogis(pd2$logitVE)*100
+pd2$VE_lower <-plogis(pd2$logitVE_lower)*100
+pd2$VE_upper <-plogis(pd2$logitVE_upper)*100
+
+
+ggplot(pd2) +
+  geom_line(aes(x=weeks,y=logitVE,group=variant,color=variant)) +
+  geom_ribbon(aes(x=weeks_numeric-1,ymin=logitVE_lower,ymax=logitVE_upper,group=variant,fill=variant),alpha=0.2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+ggsave('VE_logit_relative_var_model.png',units='in',width=4,height=3,device='png')
+
+
+ggplot(pd2) +
+  geom_line(aes(x=weeks,y=VE,group=variant,color=variant)) +
+  geom_ribbon(aes(x=weeks_numeric-1,ymin=VE_lower,ymax=VE_upper,group=variant,fill=variant),alpha=0.2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+ggsave('VE_relative_var_model.png',units='in',width=4,height=3,device='png')
+
+
+### in playing with the start week above, there is some evidence of nonlinearity. Let's gam!
+
+# linear in weeks, week:variant interaction
+summary(
+  m_nonlin_weekvariant <- gam(VEnorm ~ s(weeks_numeric, by=variant, k=5) + variant + s(vax,bs='re'),
+                           family=betar(link="logit"),
+                           method='REML',
+                           data=d %>% filter(VE>0 & weeks_numeric>1))  # exclude week 1
+)
+# nonlinear interaction model is preferred (deltaAIC=6.6)
+AIC(m_lin_noint,m_lin_weekvariant,m_nonlin_weekvariant)
+
+
+# plot model fit for modal vaccine (vax effect = 0)
+pd3 <- expand.grid(weeks=levels(d$weeks)[-c(1)], variant=levels(d$variant))
+pd3$weeks <- ordered(pd3$weeks)
+pd3$weeks_numeric <- as.numeric(pd3$weeks)+1
+pd3$vax <- 'model: variant:weeks nonlinear interaction'
+pd3$vax_variant <- interaction(pd3$vax,pd3$variant)
+
+fit<-predict(m_nonlin_weekvariant,newdata=pd3, se=TRUE, exclude='s(vax)')
+pd3$logitVE <- fit$fit
+pd3$logitVE_lower <- fit$fit-2*fit$se.fit
+pd3$logitVE_upper <- fit$fit+2*fit$se.fit
+
+pd3$VE <-plogis(pd3$logitVE)*100
+pd3$VE_lower <-plogis(pd3$logitVE_lower)*100
+pd3$VE_upper <-plogis(pd3$logitVE_upper)*100
+
+p4 +
+  geom_line(data=pd3,aes(x=weeks,y=logitVE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd3,aes(x=weeks_numeric,ymin=logitVE_lower,ymax=logitVE_upper,group=variant),alpha=0.2) 
+ggsave('VE_logit_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
+
+p3 +
+  geom_line(data=pd3,aes(x=weeks,y=VE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd3,aes(x=weeks_numeric,ymin=VE_lower,ymax=VE_upper,group=variant),alpha=0.2) 
+ggsave('VE_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
+
+
+p2 +
+  geom_line(data=pd3,aes(x=weeks,y=logitVE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd3,aes(x=weeks_numeric,ymin=logitVE_lower,ymax=logitVE_upper,group=variant),alpha=0.2) 
+ggsave('VE_logit_vax_var_model_nonlinear.png',units='in',width=6,height=3,device='png')
+
+p1 +
+  geom_line(data=pd3,aes(x=weeks,y=VE, group=variant),size=1,linetype='dashed') +
+  geom_ribbon(data=pd3,aes(x=weeks_numeric,ymin=VE_lower,ymax=VE_upper,group=variant),alpha=0.2) 
+ggsave('VE_vax_var_model_nonlinear.png',units='in',width=6,height=3,device='png')
+
+
+
+## plot to compare trends starting from same intercept
+pd4<-pd3
+
+# shift between omicron and delta
+shift_intercept <- max(pd4$logitVE[pd4$variant=='omicron']) - max(pd4$logitVE[pd4$variant=='delta'])
+# this is slightly different than coef(m_nonlin_weekvariant)['variantomicron'] because we're plotting a zeroed out random effect
+
+# zero reference 
+maxLogitVE <- max(pd4$logitVE)
+
+# shift by omicron intercept 
+pd4$logitVE[pd4$variant=='omicron'] <- pd4$logitVE[pd4$variant=='omicron'] - shift_intercept
+pd4$logitVE_lower[pd4$variant=='omicron'] <- pd4$logitVE_lower[pd4$variant=='omicron'] - shift_intercept
+pd4$logitVE_upper[pd4$variant=='omicron'] <- pd4$logitVE_upper[pd4$variant=='omicron'] - shift_intercept
+
+#shift to zero reference
+pd4$logitVE <- pd4$logitVE - maxLogitVE
+pd4$logitVE_lower <- pd4$logitVE_lower - maxLogitVE
+pd4$logitVE_upper <- pd4$logitVE_upper - maxLogitVE
+
+# VE scale
+pd4$VE <-plogis(pd4$logitVE)*100
+pd4$VE_lower <-plogis(pd4$logitVE_lower)*100
+pd4$VE_upper <-plogis(pd4$logitVE_upper)*100
+
+
+
+# observe that omicron efficacy keeps falling exponentially with time while delta stabilizes
+ggplot(pd4) +
+  geom_line(aes(x=weeks,y=logitVE,group=variant,color=variant)) +
+  geom_ribbon(aes(x=weeks_numeric-1,ymin=logitVE_lower,ymax=logitVE_upper,group=variant,fill=variant),alpha=0.2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+ggsave('VE_logit_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
+
+
+ggplot(pd4) +
+  geom_line(aes(x=weeks,y=VE,group=variant,color=variant)) +
+  geom_ribbon(aes(x=weeks_numeric-1,ymin=VE_lower,ymax=VE_upper,group=variant,fill=variant),alpha=0.2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
+
+
+# let's look at exp(logitVE_delta - logitVE_omicron) as a proxy for the relationship
+# between antibody titers and VE demonstrated in Khoury et al https://www.nature.com/articles/s41591-021-01377-8
+
+# interval of drop difference
+tmp <- pd4 %>% filter(weeks=='25+') 
+
+logit_se = (tmp$logitVE_upper-tmp$logitVE_lower)/4
+logit_draws <- data.frame(delta=tmp$logitVE[1]+2*logit_se[1]*rnorm(n=1e4,sd=logit_se[1]),
+  omicron=tmp$logitVE[2]+2*logit_se[2]*rnorm(n=1e4,sd=logit_se[2]))
+
+titer_drop_ratio <- data.frame(mean_logit=tmp$logitVE[1]-tmp$logitVE[2],
+                               lower_logit = quantile(logit_draws[,1]-logit_draws[,2],0.025),
+                               upper_logit = quantile(logit_draws[,1]-logit_draws[,2],0.975)) %>%
+  mutate(mean = exp(mean_logit),
+         lower=exp(lower_logit),
+         upper=exp(upper_logit))
+
+titer_drop_ratio
+# this shows that at the 25+ week time point, exp(logitVE) for omicron falls 2.0 (1.57,2.44) 
+# lower than delta. Under the Khoury model, this should correspond to a 2x lower drop in NAb titers for omicron relative to delta
+
+# here's the evidence from the only paper I've seen with that comparison at 4-6 months post-booster
+# compare to zhao fig 1 panels I & J https://www.nejm.org/doi/full/10.1056/NEJMc2119426
+
+zhao_drop = data.frame(delta = 2133/331,
+                             omicron = 516/51)
+
+zhao_drop_ratio = zhao_drop$omicron/zhao_drop$delta
+zhao_drop_ratio
+
+# this ratio is just at the lower edge of the confidence titer_drop_ratio confidence
+# interval above. As the Zhao titers suffer from censoring at low titers,
+# the true value is likely higher and thus consistent with this model.
+# furhtermore, the zhao endpoint is from 4-6 months, and so should be lower than seen
+# at 25+ weeks.
+
+# Pajon et al https://www.nejm.org/doi/full/10.1056/NEJMc2119912 provides a similar
+# comparison for omicron vs D614G.  The observed ratio there should overestimate
+# the difference with delta, since delta is antigenically furter from WT than D614G.
+# WT
+pajon = 6.3/2.3
+# this is just at the upper end of the titer_drop_ratio interval, again consistent with the model
+
+############
+
+# taken together, these data are consistent with omicron waning following WT vaccination
+# being less stable than delta waning after 3-4 months, both after 2-dose and booster vaccination.

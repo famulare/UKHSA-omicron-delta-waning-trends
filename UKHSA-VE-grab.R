@@ -262,45 +262,65 @@ ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device=
 # let's look at exp(logitVE_delta - logitVE_omicron) as a proxy for the relationship
 # between antibody titers and VE demonstrated in Khoury et al https://www.nature.com/articles/s41591-021-01377-8
 
-# interval of drop difference
-tmp <- pd4 %>% filter(weeks=='25+') 
+# difference of smooths https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
+pdat <- expand.grid(weeks = levels(pd4$weeks),#c('15-19','20-24','25+'),
+                    variant = c('delta', 'omicron'),
+                    vax='modal')
+pdat$weeks_numeric <- pd4$weeks_numeric[levels(pd4$weeks)==pdat$weeks]
+xp <- predict(m_nonlin_weekvariant, newdata = pdat, type = 'lpmatrix')
 
-logit_se = (tmp$logitVE_upper-tmp$logitVE_lower)/4
-logit_draws <- data.frame(delta=tmp$logitVE[1]+2*logit_se[1]*rnorm(n=1e4,sd=logit_se[1]),
-  omicron=tmp$logitVE[2]+2*logit_se[2]*rnorm(n=1e4,sd=logit_se[2]))
+# which cols of xp relate to splines of interest?
+c1 <- grepl('delta', colnames(xp))
+c2 <- grepl('omicron', colnames(xp))
+## which rows of xp relate to variants of interest?
+r1 <- with(pdat, variant == 'delta')
+r2 <- with(pdat, variant == 'omicron')
 
-titer_drop_ratio <- data.frame(mean_logit=tmp$logitVE[1]-tmp$logitVE[2],
-                               lower_logit = quantile(logit_draws[,1]-logit_draws[,2],0.025),
-                               upper_logit = quantile(logit_draws[,1]-logit_draws[,2],0.975)) %>%
+## difference rows of xp for data from comparison
+X <- xp[r1, ] - xp[r2, ]
+## zero out cols of X related to splines for other vaccines
+X[, ! (c1 | c2)] <- 0
+## zero out the parametric cols
+X[, !grepl('^s\\(', colnames(xp))] <- 0
+
+# calculate mean difference and se
+dif <- X %*% coef(m_nonlin_weekvariant)
+se <- sqrt(rowSums((X %*% vcov(m_nonlin_weekvariant, unconditional = TRUE)) * X))
+
+titer_drop_ratio <- data.frame(weeks=unique(pdat$weeks),
+                               mean_logit=dif,
+                               lower_logit = dif-2*se,
+                               upper_logit = dif+2*se) %>%
   mutate(mean = exp(mean_logit),
          lower=exp(lower_logit),
          upper=exp(upper_logit))
 
 titer_drop_ratio
-# this shows that at the 25+ week time point, exp(logitVE) for omicron falls 2.0 (1.57,2.44) 
-# lower than delta. Under the Khoury model, this should correspond to a 2x lower drop in NAb titers for omicron relative to delta
+
+# this shows that at the 25+ week time point, exp(logitVE) for omicron falls 1.8 (1.3,2.5) 
+# lower than delta. Under the Khoury model, this should correspond to a 1.8x lower drop in NAb titers for omicron relative to delta
 
 # here's the evidence from the only paper I've seen with that comparison at 4-6 months post-booster
 # compare to zhao fig 1 panels I & J https://www.nejm.org/doi/full/10.1056/NEJMc2119426
 
-zhao_drop = data.frame(delta = 2133/331,
-                             omicron = 516/51)
+zhao_drop = data.frame(median_NAb_1mo = c(2133,516),
+                       median_NAb_4to6mo = c(331,51),
+                       variant = c('delta','omicron'))
+zhao_drop$waning_fraction <- round(zhao_drop$median_NAb_1mo/zhao_drop$median_NAb_4to6mo,1)
+zhao_drop$waning_drop_ratio <- c(NaN,zhao_drop$waning_fraction[2]/zhao_drop$waning_fraction[1])
+zhao_drop
 
-zhao_drop_ratio = zhao_drop$omicron/zhao_drop$delta
-zhao_drop_ratio
 
-# this ratio is just at the lower edge of the confidence titer_drop_ratio confidence
-# interval above. As the Zhao titers suffer from censoring at low titers,
-# the true value is likely higher and thus consistent with this model.
-# furhtermore, the zhao endpoint is from 4-6 months, and so should be lower than seen
-# at 25+ weeks.
+# this ratio is solidly inside the predicted confidence interal at 6 months
+# and if the best comparison is really the 20-24 week bin, then it's still just inside the upper C1
 
 # Pajon et al https://www.nejm.org/doi/full/10.1056/NEJMc2119912 provides a similar
 # comparison for omicron vs D614G.  The observed ratio there should overestimate
 # the difference with delta, since delta is antigenically furter from WT than D614G.
 # WT
 pajon = 6.3/2.3
-# this is just at the upper end of the titer_drop_ratio interval, again consistent with the model
+pajon
+# this is just outside the upper end of the titer_drop_ratio interval, again consistent with the model
 
 ############
 

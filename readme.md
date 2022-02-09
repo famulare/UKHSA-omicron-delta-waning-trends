@@ -40,7 +40,7 @@ Starting with the fundamental relationship,
 ![logit(VE) \sim log(NAb)](https://latex.codecogs.com/svg.image?%5Ctextrm%7Blogit%7D(V%5C!E)&space;%5Csim&space;%5Clog(N%5C!Ab)) 
 one can derive a difference-in-difference prediction of the expected ratio of waning ratios from 1 to M months after vaccination using only the time trends of VE and zero free parameters:
 
-![relative titer drop](https://latex.codecogs.com/svg.image?%5Cfrac%7BN%5C!Ab_%7Bomicron%7D%5E%7B(1)%7D/N%5C!Ab_%7Bomicron%7D%5E%7B(M)%7D%7D%7BN%5C!Ab_%7Bdelta%7D%5E%7B(1)%7D/N%5C!Ab_%7Bdelta%7D%5E%7B(M)%7D%7D&space;=&space;%5Cexp%5Cleft((%5Ctextrm%7Blogit%7D(V%5C!E_%7Bomicron%7D%5E%7B(1)%7D)-%5Ctextrm%7Blogit%7D(V%5C!E_%7Bomicron%7D%5E%7B(M)%7D))&space;-&space;(%5Ctextrm%7Blogit%7D(V%5C!E_%7Bdelta%7D%5E%7B(1)%7D)-%5Ctextrm%7Blogit%7D(V%5C!E_%7Bdelta%7D%5E%7B(M)%7D)%5Cright).%20)
+![](diff-in-diff.svg)
 
 When this ratio of titers, which depends only on differences within variant and not across variants, is greater than 1, it indicates that omicron is waning at a faster rate than delta over the time interval. 
 

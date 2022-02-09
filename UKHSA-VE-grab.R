@@ -246,16 +246,14 @@ pd4$VE_upper <-plogis(pd4$logitVE_upper)*100
 ggplot(pd4) +
   geom_line(aes(x=weeks,y=logitVE,group=variant,color=variant)) +
   geom_ribbon(aes(x=weeks_numeric-1,ymin=logitVE_lower,ymax=logitVE_upper,group=variant,fill=variant),alpha=0.2) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+  theme_bw() 
 ggsave('VE_logit_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 
 ggplot(pd4) +
   geom_line(aes(x=weeks,y=VE,group=variant,color=variant)) +
   geom_ribbon(aes(x=weeks_numeric-1,ymin=VE_lower,ymax=VE_upper,group=variant,fill=variant),alpha=0.2) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) 
+  theme_bw()
 ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 
@@ -308,19 +306,38 @@ zhao_drop = data.frame(median_NAb_1mo = c(2133,516),
                        variant = c('delta','omicron'))
 zhao_drop$waning_fraction <- round(zhao_drop$median_NAb_1mo/zhao_drop$median_NAb_4to6mo,1)
 zhao_drop$waning_drop_ratio <- c(NaN,zhao_drop$waning_fraction[2]/zhao_drop$waning_fraction[1])
+zhao_drop$weeks <- '20-24' # middle match for 4-6 months (18-26 weeks)
+zhao_drop$label <- 'Zhao: omicron-delta'
 zhao_drop
 
 
-# this ratio is solidly inside the predicted confidence interal at 6 months
+# this ratio is solidly inside the predicted confidence interval at 6 months
 # and if the best comparison is really the 20-24 week bin, then it's still just inside the upper C1
 
 # Pajon et al https://www.nejm.org/doi/full/10.1056/NEJMc2119912 provides a similar
 # comparison for omicron vs D614G.  The observed ratio there should overestimate
-# the difference with delta, since delta is antigenically furter from WT than D614G.
+# the difference with delta, since delta is antigenically further from WT than D614G.
 # WT
-pajon = 6.3/2.3
+pajon = data.frame(waning_drop_ratio=6.3/2.3,
+                   weeks='25+')
 pajon
 # this is just outside the upper end of the titer_drop_ratio interval, again consistent with the model
+
+
+ggplot(titer_drop_ratio) +
+  geom_line(aes(x=weeks,y=mean,group='all')) +
+  geom_ribbon(aes(x=as.numeric(weeks),ymin=lower,ymax=upper),alpha=0.2) +
+  # geom_point(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
+  # geom_text(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
+  geom_segment(data=zhao_drop,aes(x=5-0.4,xend=6,y=waning_drop_ratio, yend=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
+  geom_text(data=zhao_drop,aes(5-0.4,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
+  geom_point(data=pajon,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
+  geom_text(data=pajon,aes(x=weeks,y=waning_drop_ratio, label='Pajon: omicron-D614G',color='Pajon: omicron-D614G'),color='blue',hjust=1.05) +
+  theme_bw() +
+  # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
+  ylab('ratio of waning ratios') + ylim(c(0,3))
+
+ggsave('ratio_of_waning_ratios_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 ############
 

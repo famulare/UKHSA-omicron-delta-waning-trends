@@ -37,10 +37,10 @@ Using the model, we can isolate the waning trend from the difference in intercep
 To bring in immune correlate data from boosted populations and independently verify that the difference in waning rates estimate above is consistent with immunological evidence and in boosted populations, I modeled the relationship between efficacy and antibody titer using the logit-linear relationship first demonstrated in [Khoury et al 2021](https://www.nature.com/articles/s41591-021-01377-8). With some algebra, one can derive a parameter-free prediction for the relative difference in NAb waning between omicron and delta from the observed VE difference. 
 
 Starting with the fundamental relationship,
-![logit(VE) \sim log(NAb)](https://latex.codecogs.com/svg.latex?\textrm{logit}(V\!E)&space;\sim&space;\log(N\!Ab)) 
+![logit(VE) \sim log(NAb)](https://latex.codecogs.com/svg.image?%5Ctextrm%7Blogit%7D(V%5C!E)&space;%5Csim&space;%5Clog(N%5C!Ab)) 
 one can derive a difference-in-difference prediction of the expected ratio of waning ratios from 1 to M months after vaccination using only the time trends of VE and zero free parameters:
 
-![relative titer drop](https://latex.codecogs.com/svg.latex?\frac{N\!Ab_{omicron}^{(1)}/N\!Ab_{omicron}^{(M)}}{N\!Ab_{delta}^{(1)}/N\!Ab_{delta}^{(M)}}&space;=&space;\exp\left((\textrm{logit}(V\!E_{omicron}^{(1)})-\textrm{logit}(V\!E_{omicron}^{(M)}))&space;-&space;(\textrm{logit}(V\!E_{delta}^{(1)})-\textrm{logit}(V\!E_{delta}^{(M)})\right).)
+![relative titer drop](https://latex.codecogs.com/svg.image?%5Cfrac%7BN%5C!Ab_%7Bomicron%7D%5E%7B(1)%7D/N%5C!Ab_%7Bomicron%7D%5E%7B(M)%7D%7D%7BN%5C!Ab_%7Bdelta%7D%5E%7B(1)%7D/N%5C!Ab_%7Bdelta%7D%5E%7B(M)%7D%7D&space;=&space;%5Cexp%5Cleft((%5Ctextrm%7Blogit%7D(V%5C!E_%7Bomicron%7D%5E%7B(1)%7D)-%5Ctextrm%7Blogit%7D(V%5C!E_%7Bomicron%7D%5E%7B(M)%7D))&space;-&space;(%5Ctextrm%7Blogit%7D(V%5C!E_%7Bdelta%7D%5E%7B(1)%7D)-%5Ctextrm%7Blogit%7D(V%5C!E_%7Bdelta%7D%5E%7B(M)%7D)%5Cright).%20)
 
 When this ratio of titers, which depends only on differences within variant and not across variants, is greater than 1, it indicates that omicron is waning at a faster rate than delta over the time interval. 
 

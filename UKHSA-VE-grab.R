@@ -2,8 +2,8 @@
 
 library(tidyverse)
 library(mgcv)
-library(mvtnorm)
 library(matrixStats)
+library(mvtnorm)
 
 # load data grabbed from UKHSA 2022 Week 4 vaccine surveillance report 
 # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
@@ -349,29 +349,68 @@ zhao_drop
 # the difference with delta, since delta is antigenically further from WT than D614G.
 # WT
 
-pajon_drop = data.frame(median_NAb_1mo = c(2423,850),
+# boost taken directly from the paper
+pajon_boost_drop = data.frame(median_NAb_1mo = c(2423,850),
                        median_NAb_6mo = c(1067,136),
                        variant = c('D614G','omicron'))
 
-pajon_drop$log_diff <- log(pajon_drop$median_NAb_1mo)-log(pajon_drop$median_NAb_6mo)
-pajon_drop$waning_drop_ratio <- c(NaN,pajon_drop$log_diff[2]/pajon_drop$log_diff[1])
-pajon_drop$weeks <- '25+' # middle match for 4-6 months (18-26 weeks)
-pajon_drop$label <- 'Pajon: omicron-D614G'
-pajon_drop
+pajon_boost_drop$log_diff <- log(pajon_boost_drop$median_NAb_1mo)-log(pajon_boost_drop$median_NAb_6mo)
+pajon_boost_drop$waning_drop_ratio <- c(NaN,pajon_boost_drop$log_diff[2]/pajon_boost_drop$log_diff[1])
+pajon_boost_drop$weeks <- '25+' # middle match for 4-6 months (18-26 weeks)
+pajon_boost_drop$label <- 'Pajon: omicron-D614G: WA1 boost'
+pajon_boost_drop
 
 # this is outside the upper end of the titer_drop_ratio interval, 
 # again consistent with the model, although not a tight bound
 
+# 2-dose digitized to account for censoring, since not reported in the paper
+
+library(EnvStats)
+
+pd <-  read.csv('pajon-2dose-grab.csv',stringsAsFactors = TRUE)
+pd$weeks[pd$weeks==4] <- '2-4'
+pd$weeks[pd$weeks==30] <- '25+'
+
+# checking figure digitization matches paper for delta 2 dose
+idx <- pd$weeks=='2-4' & pd$variant=='D614G'
+wt1<-10^mean(pd$log10_titer[idx]) # paper reports 1496, so good agreement!
+wt1 <- 1496
+
+idx <- pd$weeks=='25+' & pd$variant=='D614G'
+wt7<-10^mean(pd$log10_titer[idx]) # paper reports 193, so good agreement!
+wt7 <- 193
+
+# censoring-aware estimates for omicron
+idx <- pd$weeks=='2-4' & pd$variant=='omicron'
+omicron1 <- 10^enormCensored(pd$log10_titer[idx],pd$censored[idx])$parameters[1] # paper reports 43 with only 3 censored variables
+
+idx <- pd$weeks=='25+' & pd$variant=='omicron'
+omicron7 <- 10^enormCensored(pd$log10_titer[idx],pd$censored[idx])$parameters[1] # paper reports 23 but 45% of data are censored
+
+pajon_primary_drop = data.frame(median_NAb_1mo = c(wt1,omicron1),
+                              median_NAb_6mo = c(wt7,omicron7),
+                              variant = c('D614G','omicron'))
+
+pajon_primary_drop$log_diff <- log(pajon_primary_drop$median_NAb_1mo)-log(pajon_primary_drop$median_NAb_6mo)
+pajon_primary_drop$waning_drop_ratio <- c(NaN,pajon_primary_drop$log_diff[2]/pajon_primary_drop$log_diff[1])
+pajon_primary_drop$weeks <- '25+' # middle match for 4-6 months (18-26 weeks)
+pajon_primary_drop$label <- 'Pajon: omicron-D614G: WA1 primary'
+pajon_primary_drop
+
+# this shows maturation of omicron NAbs after two doses, relative to WT waning, 
+# which is what I expect.  Why then does UKHSA data show the waning pattern it does?
 
 
 ggplot(titer_drop_ratio) +
   geom_line(aes(x=weeks,y=mean,group='all')) +
   geom_ribbon(aes(x=as.numeric(weeks),ymin=lower,ymax=upper),alpha=0.2) +
   geom_hline(aes(yintercept=1),linetype='dashed')+
-  geom_segment(data=zhao_drop,aes(x=5-0.4,xend=6,y=waning_drop_ratio, yend=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
+  geom_segment(data=zhao_drop,aes(x=5-0.4,xend=6,y=waning_drop_ratio, yend=waning_drop_ratio, color='Zhao: omicron-delta: boost'),color='red') +
   geom_label(data=zhao_drop,aes(1,y=2.1, label=label,color=label),color='red',hjust=0,label.size=NA) +
-  geom_point(data=pajon_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
-  geom_label(data=pajon_drop,aes(x=1,y=1.96, label='Pajon: omicron-D614G',color='Pajon: omicron-D614G'),color='blue',hjust=0,label.size=NA) +
+  geom_point(data=pajon_boost_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
+  geom_label(data=pajon_boost_drop,aes(x=1,y=1.96, label='Pajon: omicron-D614G: boost',color='Pajon: omicron-D614G'),color='blue',hjust=0,label.size=NA) +
+  geom_point(data=pajon_primary_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='green') +
+  geom_label(data=pajon_primary_drop,aes(x=1,y=1.82, label='Pajon: omicron-D614G: boost',color='Pajon: omicron-D614G'),color='green',hjust=0,label.size=NA) +
   theme_bw() +
   # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
   ylab('ratio of log titer difference') 

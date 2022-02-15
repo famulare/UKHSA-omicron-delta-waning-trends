@@ -2,6 +2,8 @@
 
 library(tidyverse)
 library(mgcv)
+library(mvtnorm)
+library(matrixStats)
 
 # load data grabbed from UKHSA 2022 Week 4 vaccine surveillance report 
 # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
@@ -257,15 +259,20 @@ ggplot(pd4) +
 ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 
-# let's look at exp(logitVE_delta - logitVE_omicron) as a proxy for the relationship
-# between antibody titers and VE demonstrated in Khoury et al https://www.nature.com/articles/s41591-021-01377-8
+# let's look at (logitVE_omi,1 - logitVE_omi,M)/(logitVE_delta,1 - logitVE_delta,M) 
+# as a proxy for the relationship between antibody titers and VE demonstrated in
+# Khoury et al https://www.nature.com/articles/s41591-021-01377-8
 
-# difference of smooths https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
+# to get ratio of differences of smooths, we have to sample from the model
+
+# sampling smooths
+# mix of https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
+# and https://gist.github.com/noamross/8bf1fc5b2f629b3a7e1eb6b4572e8388
 pdat <- expand.grid(weeks = levels(pd4$weeks),#c('15-19','20-24','25+'),
                     variant = c('delta', 'omicron'),
                     vax='modal')
 pdat$weeks_numeric <- pd4$weeks_numeric[levels(pd4$weeks)==pdat$weeks]
-xp <- predict(m_nonlin_weekvariant, newdata = pdat, type = 'lpmatrix')
+xp <- predict(m_nonlin_weekvariant, newdata = pdat, type = 'lpmatrix',unconditional = TRUE)
 
 # which cols of xp relate to splines of interest?
 c1 <- grepl('delta', colnames(xp))
@@ -274,29 +281,52 @@ c2 <- grepl('omicron', colnames(xp))
 r1 <- with(pdat, variant == 'delta')
 r2 <- with(pdat, variant == 'omicron')
 
-## difference rows of xp for data from comparison
-X <- xp[r1, ] - xp[r2, ]
-## zero out cols of X related to splines for other vaccines
-X[, ! (c1 | c2)] <- 0
-## zero out the parametric cols
-X[, !grepl('^s\\(', colnames(xp))] <- 0
+X <- xp 
 
-# calculate mean difference and se
-dif <- X %*% coef(m_nonlin_weekvariant)
-se <- sqrt(rowSums((X %*% vcov(m_nonlin_weekvariant, unconditional = TRUE)) * X))
+## filter out cols of X related to splines for other vaccines
+X <- X[, (c1 | c2)]
+## filter out the parametric cols
+X[, !grepl('^s\\(', colnames(X))] <- 0
 
-titer_drop_ratio <- data.frame(weeks=unique(pdat$weeks),
-                               mean_logit=dif,
-                               lower_logit = dif-2*se,
-                               upper_logit = dif+2*se) %>%
-  mutate(mean = exp(mean_logit),
-         lower=exp(lower_logit),
-         upper=exp(upper_logit))
+# get mean coefs of the relevant smooths
+mean_coef <- coef(m_nonlin_weekvariant)[c1|c2]
 
-titer_drop_ratio
+# Get the variance-covariance matrix of coefficients, accounting for smoothing
+# uncertainty, for the relevant smooths
+vcov_mat <- vcov(m_nonlin_weekvariant, unconditional = TRUE)
+vcov_mat <- vcov_mat[c1|c2,c1|c2]
 
-# this shows that at the 25+ week time point, exp(logitVE) for omicron falls 1.8 (1.3,2.5) 
-# lower than delta. Under the Khoury model, this should correspond to a 1.8x lower drop in NAb titers for omicron relative to delta
+
+# Draw samples from the posterior and make predictions from them
+N<-1e3
+coefs <- rmvnorm(N, mean = mean_coef, sigma = vcov_mat)
+preds <- X %*% t(coefs)
+
+# tidy predictions
+preds <- as.data.frame(preds)
+colnames(preds)<-paste('rep',1:N,sep='')
+preds$variant = c(rep('delta',6),rep('omicron',6))
+
+# diff predictions (logitVE_1 - logitVE_M)
+preds[1:6,1:N] <- preds[rep(1, 6),1:N] - preds[1:6,1:N] 
+preds[6+(1:6),1:N] <- preds[rep(6+1, 6),1:N] - preds[6+(1:6),1:N]
+
+# ratio preds: omicron over delta
+preds <- preds[6+(1:6),1:N]/preds[1:6,1:N]
+preds[1,] <- 1 # limit at zero time difference is 1
+
+# index time 
+preds$weeks_numeric <- 1:6
+preds$weeks <- factor(levels(pd4$weeks),levels=levels(pd4$weeks))
+
+preds$mean = rowMeans(preds[,1:N])
+preds$lower = rowQuantiles(as.matrix(preds[,1:N]),probs=0.025)
+preds$upper = rowQuantiles(as.matrix(preds[,1:N]),probs=0.975)
+
+titer_drop_ratio <- preds %>% select(weeks, weeks_numeric,mean,lower, upper)
+
+# this shows that at the 25+ week time point, logitVE for omicron falls 1.3 (1.1,1.6) 
+# more than delta. Under the Khoury model, this should correspond to a 1.3x lower drop in NAb titers for omicron relative to delta
 
 # here's the evidence from the only paper I've seen with that comparison at 4-6 months post-booster
 # compare to zhao fig 1 panels I & J https://www.nejm.org/doi/full/10.1056/NEJMc2119426
@@ -304,12 +334,12 @@ titer_drop_ratio
 zhao_drop = data.frame(median_NAb_1mo = c(2133,516),
                        median_NAb_4to6mo = c(331,51),
                        variant = c('delta','omicron'))
-zhao_drop$waning_fraction <- round(zhao_drop$median_NAb_1mo/zhao_drop$median_NAb_4to6mo,1)
-zhao_drop$waning_drop_ratio <- c(NaN,zhao_drop$waning_fraction[2]/zhao_drop$waning_fraction[1])
+
+zhao_drop$log_diff <- log(zhao_drop$median_NAb_1mo)-log(zhao_drop$median_NAb_4to6mo)
+zhao_drop$waning_drop_ratio <- c(NaN,zhao_drop$log_diff[2]/zhao_drop$log_diff[1])
 zhao_drop$weeks <- '20-24' # middle match for 4-6 months (18-26 weeks)
 zhao_drop$label <- 'Zhao: omicron-delta'
 zhao_drop
-
 
 # this ratio is solidly inside the predicted confidence interval at 6 months
 # and if the best comparison is really the 20-24 week bin, then it's still just inside the upper C1
@@ -318,24 +348,33 @@ zhao_drop
 # comparison for omicron vs D614G.  The observed ratio there should overestimate
 # the difference with delta, since delta is antigenically further from WT than D614G.
 # WT
-pajon = data.frame(waning_drop_ratio=6.3/2.3,
-                   weeks='25+')
-pajon
-# this is just outside the upper end of the titer_drop_ratio interval, again consistent with the model
+
+pajon_drop = data.frame(median_NAb_1mo = c(2423,850),
+                       median_NAb_6mo = c(1067,136),
+                       variant = c('D614G','omicron'))
+
+pajon_drop$log_diff <- log(pajon_drop$median_NAb_1mo)-log(pajon_drop$median_NAb_6mo)
+pajon_drop$waning_drop_ratio <- c(NaN,pajon_drop$log_diff[2]/pajon_drop$log_diff[1])
+pajon_drop$weeks <- '25+' # middle match for 4-6 months (18-26 weeks)
+pajon_drop$label <- 'Pajon: omicron-D614G'
+pajon_drop
+
+# this is outside the upper end of the titer_drop_ratio interval, 
+# again consistent with the model, although not a tight bound
+
 
 
 ggplot(titer_drop_ratio) +
   geom_line(aes(x=weeks,y=mean,group='all')) +
   geom_ribbon(aes(x=as.numeric(weeks),ymin=lower,ymax=upper),alpha=0.2) +
-  # geom_point(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
-  # geom_text(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
+  geom_hline(aes(yintercept=1),linetype='dashed')+
   geom_segment(data=zhao_drop,aes(x=5-0.4,xend=6,y=waning_drop_ratio, yend=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
-  geom_text(data=zhao_drop,aes(5-0.4,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
-  geom_point(data=pajon,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
-  geom_text(data=pajon,aes(x=weeks,y=waning_drop_ratio, label='Pajon: omicron-D614G',color='Pajon: omicron-D614G'),color='blue',hjust=1.05) +
+  geom_label(data=zhao_drop,aes(1,y=2.1, label=label,color=label),color='red',hjust=0,label.size=NA) +
+  geom_point(data=pajon_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
+  geom_label(data=pajon_drop,aes(x=1,y=1.96, label='Pajon: omicron-D614G',color='Pajon: omicron-D614G'),color='blue',hjust=0,label.size=NA) +
   theme_bw() +
   # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
-  ylab('ratio of waning ratios') + ylim(c(0,3))
+  ylab('ratio of log titer difference') 
 
 ggsave('ratio_of_waning_ratios_model_nonlinear.png',units='in',width=4,height=3,device='png')
 

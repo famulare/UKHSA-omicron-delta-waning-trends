@@ -257,7 +257,7 @@ ggplot(pd4) +
 ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 
-# let's look at exp(logitVE_delta - logitVE_omicron) as a proxy for the relationship
+# let's look at exp(1/beta*(logitVE_delta - logitVE_omicron)) as a proxy for the relationship
 # between antibody titers and VE demonstrated in Khoury et al https://www.nature.com/articles/s41591-021-01377-8
 
 # difference of smooths https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
@@ -285,13 +285,19 @@ X[, !grepl('^s\\(', colnames(xp))] <- 0
 dif <- X %*% coef(m_nonlin_weekvariant)
 se <- sqrt(rowSums((X %*% vcov(m_nonlin_weekvariant, unconditional = TRUE)) * X))
 
+# one parameter slope from Khoury into this exponential mapping
+# Table S5 Khoury https://www.nature.com/articles/s41591-021-01377-8
+beta_symp_mean=3/log(10) 
+beta_symp_lower= 2.2/log(10)
+beta_symp_upper= 4.2/log(10)
+
 titer_drop_ratio <- data.frame(weeks=unique(pdat$weeks),
                                mean_logit=dif,
                                lower_logit = dif-2*se,
                                upper_logit = dif+2*se) %>%
-  mutate(mean = exp(mean_logit),
-         lower=exp(lower_logit),
-         upper=exp(upper_logit))
+  mutate(mean = exp(1/beta_symp_mean*mean_logit),
+         lower=exp(1/beta_symp_upper*lower_logit),
+         upper=exp(1/beta_symp_lower*upper_logit))
 
 titer_drop_ratio
 

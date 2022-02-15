@@ -410,7 +410,7 @@ ggplot(titer_drop_ratio) +
   geom_point(data=pajon_boost_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
   geom_label(data=pajon_boost_drop,aes(x=1,y=1.96, label='Pajon: omicron-D614G: boost',color='Pajon: omicron-D614G'),color='blue',hjust=0,label.size=NA) +
   geom_point(data=pajon_primary_drop,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='green') +
-  geom_label(data=pajon_primary_drop,aes(x=1,y=1.82, label='Pajon: omicron-D614G: boost',color='Pajon: omicron-D614G'),color='green',hjust=0,label.size=NA) +
+  geom_label(data=pajon_primary_drop,aes(x=1,y=1.82, label='Pajon: omicron-D614G: primary',color='Pajon: omicron-D614G'),color='green',hjust=0,label.size=NA) +
   theme_bw() +
   # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
   ylab('ratio of log titer difference') 

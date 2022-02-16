@@ -1,4 +1,4 @@
-# Comparison of vaccine efficacy waning trends over time for omicron vs delta using UHKSA estimates
+# Comparison of vaccine efficacy waning trends over time for omicron and delta from early data
 Mike Famulare
 
 [Institute for Disease Modeling](www.idmod.org) | Global Health | Bill \& Melinda Gates Foundation

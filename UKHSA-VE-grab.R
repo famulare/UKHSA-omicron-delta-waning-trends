@@ -364,6 +364,12 @@ pajon_boost_drop
 # again consistent with the model, although not a tight bound
 
 # 2-dose digitized to account for censoring, since not reported in the paper
+# Upon further reflection, I do not think it's valid to do this, even with censoring
+# correction. The censoring isn't just "there's a continuous distribution but we
+# cut off measurement", but rather "there are very few and often zero molecules in 
+# the sample to be studying". Below a certain point, titering isn't doing anything 
+# anymore --- there's nothing left to dilute.  So while I will keep this branch 
+# visible for those who want to disagree, I no longer think it is correct.
 
 library(EnvStats)
 

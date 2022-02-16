@@ -2,8 +2,6 @@
 
 library(tidyverse)
 library(mgcv)
-library(mvtnorm)
-library(matrixStats)
 
 # load data grabbed from UKHSA 2022 Week 4 vaccine surveillance report 
 # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1050721/Vaccine-surveillance-report-week-4.pdf
@@ -259,6 +257,104 @@ ggplot(pd4) +
 ggsave('VE_relative_var_model_nonlinear.png',units='in',width=4,height=3,device='png')
 
 
+# let's look at exp(1/beta*(logitVE_delta - logitVE_omicron)) as a proxy for the relationship
+# between antibody titers and VE demonstrated in Khoury et al https://www.nature.com/articles/s41591-021-01377-8
+
+# difference of smooths https://fromthebottomoftheheap.net/2017/10/10/difference-splines-i/
+pdat <- expand.grid(weeks = levels(pd4$weeks),#c('15-19','20-24','25+'),
+                    variant = c('delta', 'omicron'),
+                    vax='modal')
+pdat$weeks_numeric <- pd4$weeks_numeric[levels(pd4$weeks)==pdat$weeks]
+xp <- predict(m_nonlin_weekvariant, newdata = pdat, type = 'lpmatrix')
+
+# which cols of xp relate to splines of interest?
+c1 <- grepl('delta', colnames(xp))
+c2 <- grepl('omicron', colnames(xp))
+## which rows of xp relate to variants of interest?
+r1 <- with(pdat, variant == 'delta')
+r2 <- with(pdat, variant == 'omicron')
+
+## difference rows of xp for data from comparison
+X <- xp[r1, ] - xp[r2, ]
+## zero out cols of X related to splines for other vaccines
+X[, ! (c1 | c2)] <- 0
+## zero out the parametric cols
+X[, !grepl('^s\\(', colnames(xp))] <- 0
+
+# calculate mean difference and se
+dif <- X %*% coef(m_nonlin_weekvariant)
+se <- sqrt(rowSums((X %*% vcov(m_nonlin_weekvariant, unconditional = TRUE)) * X))
+
+# one parameter slope from Khoury into this exponential mapping
+# Table S5 Khoury https://www.nature.com/articles/s41591-021-01377-8
+beta_symp_mean=3/log(10) 
+beta_symp_lower= 2.2/log(10)
+beta_symp_upper= 4.2/log(10)
+
+titer_drop_ratio <- data.frame(weeks=unique(pdat$weeks),
+                               mean_logit=dif,
+                               lower_logit = dif-2*se,
+                               upper_logit = dif+2*se) %>%
+  mutate(mean = exp(1/beta_symp_mean*mean_logit),
+         lower=exp(1/beta_symp_upper*lower_logit),
+         upper=exp(1/beta_symp_lower*upper_logit))
+
+titer_drop_ratio
+
+# this shows that at the 25+ week time point, exp(logitVE) for omicron falls 1.8 (1.3,2.5) 
+# lower than delta. Under the Khoury model, this should correspond to a 1.8x lower drop in NAb titers for omicron relative to delta
+
+# here's the evidence from the only paper I've seen with that comparison at 4-6 months post-booster
+# compare to zhao fig 1 panels I & J https://www.nejm.org/doi/full/10.1056/NEJMc2119426
+
+zhao_drop = data.frame(median_NAb_1mo = c(2133,516),
+                       median_NAb_4to6mo = c(331,51),
+                       variant = c('delta','omicron'))
+zhao_drop$waning_fraction <- round(zhao_drop$median_NAb_1mo/zhao_drop$median_NAb_4to6mo,1)
+zhao_drop$waning_drop_ratio <- c(NaN,zhao_drop$waning_fraction[2]/zhao_drop$waning_fraction[1])
+zhao_drop$weeks <- '20-24' # middle match for 4-6 months (18-26 weeks)
+zhao_drop$label <- 'Zhao: omicron-delta'
+zhao_drop
+
+
+# this ratio is solidly inside the predicted confidence interval at 6 months
+# and if the best comparison is really the 20-24 week bin, then it's still just inside the upper C1
+
+# Pajon et al https://www.nejm.org/doi/full/10.1056/NEJMc2119912 provides a similar
+# comparison for omicron vs D614G.  The observed ratio there should overestimate
+# the difference with delta, since delta is antigenically further from WT than D614G.
+# WT
+pajon = data.frame(waning_drop_ratio=6.3/2.3,
+                   weeks='25+')
+pajon
+# this is just outside the upper end of the titer_drop_ratio interval, again consistent with the model
+
+
+ggplot(titer_drop_ratio) +
+  geom_line(aes(x=weeks,y=mean,group='all')) +
+  geom_ribbon(aes(x=as.numeric(weeks),ymin=lower,ymax=upper),alpha=0.2) +
+  # geom_point(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
+  # geom_text(data=zhao_drop,aes(x=weeks,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
+  geom_segment(data=zhao_drop,aes(x=5-0.4,xend=6,y=waning_drop_ratio, yend=waning_drop_ratio, color='Zhao: omicron-delta'),color='red') +
+  geom_text(data=zhao_drop,aes(5-0.4,y=waning_drop_ratio, label=label,color=label),color='red',hjust=1.05) +
+  geom_point(data=pajon,aes(x=weeks,y=waning_drop_ratio, color='Pajon: omicron-D614G'),color='blue') +
+  geom_text(data=pajon,aes(x=weeks,y=waning_drop_ratio, label='Pajon: omicron-D614G',color='Pajon: omicron-D614G'),color='blue',hjust=1.05) +
+  theme_bw() +
+  # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
+  ylab('ratio of waning ratios') + ylim(c(0,3))
+
+ggsave('ratio_of_waning_ratios_model_nonlinear.png',units='in',width=4,height=3,device='png')
+
+############
+
+# taken together, these data are consistent with omicron waning following WT vaccination
+# being less stable than delta waning after 3-4 months, both after 2-dose and booster vaccination.
+
+
+
+## including zero parameter ratio of log titer differences
+# code taken from https://github.com/famulare/UKHSA-omicron-delta-waning-trends/blob/2670425a2d59ca5be9940f0b9768155fa4f94af2/UKHSA-VE-grab.R#L262 and below
+
 # let's look at (logitVE_omi,1 - logitVE_omi,M)/(logitVE_delta,1 - logitVE_delta,M) 
 # as a proxy for the relationship between antibody titers and VE demonstrated in
 # Khoury et al https://www.nature.com/articles/s41591-021-01377-8
@@ -350,8 +446,8 @@ zhao_drop
 # WT
 
 pajon_drop = data.frame(median_NAb_1mo = c(2423,850),
-                       median_NAb_6mo = c(1067,136),
-                       variant = c('D614G','omicron'))
+                        median_NAb_6mo = c(1067,136),
+                        variant = c('D614G','omicron'))
 
 pajon_drop$log_diff <- log(pajon_drop$median_NAb_1mo)-log(pajon_drop$median_NAb_6mo)
 pajon_drop$waning_drop_ratio <- c(NaN,pajon_drop$log_diff[2]/pajon_drop$log_diff[1])
@@ -376,9 +472,4 @@ ggplot(titer_drop_ratio) +
   # theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1)) +
   ylab('ratio of log titer difference') 
 
-ggsave('ratio_of_waning_ratios_model_nonlinear.png',units='in',width=4,height=3,device='png')
-
-############
-
-# taken together, these data are consistent with omicron waning following WT vaccination
-# being less stable than delta waning after 3-4 months, both after 2-dose and booster vaccination.
+ggsave('ratio_of_log_titer_waning_differences_l_nonlinear.png',units='in',width=4,height=3,device='png')
